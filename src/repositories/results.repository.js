@@ -4,7 +4,7 @@ const { sequelize } = require('../models');
 const { QueryTypes } = require('sequelize');
 
 async function findFinishedGamePlayers(since) {
-  let sql = `
+  const sql = `
     SELECT
       s.session_code,
       s.started_at,
@@ -17,20 +17,16 @@ async function findFinishedGamePlayers(since) {
     JOIN players p ON p.session_id = s.session_id
     JOIN users u ON u.user_id = p.user_id
     WHERE s.status = 'CLOSED'
+      AND (
+        :since::timestamptz IS NULL
+        OR s.ended_at > :since::timestamptz
+      )
+    ORDER BY s.ended_at, p.score DESC
   `;
-
-  const replacements = {};
-
-  if (since) {
-    "sql +=  AND s.ended_at > :since";
-    replacements.since = since;
-  }
-
-  "sql +=  ORDER BY s.ended_at, p.score DESC";
 
   return sequelize.query(sql, {
     type: QueryTypes.SELECT,
-    replacements,
+    replacements: { since: since || null },
   });
 }
 
