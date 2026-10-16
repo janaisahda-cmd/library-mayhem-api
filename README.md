@@ -4,7 +4,8 @@ Backend API for **[Library Mayhem]**, a tournament game for the SorSU Bulan Camp
 CS 313 Software Engineering 1, A.Y. 2026-2027.
 
 - Developer: [Janaisah Dormiendo Amatonding] ([janaisahda-cmd]), BSCS [3-2]
-- Group and game concept: [Team 12]
+- Group and game concept: [Team 12] [A fast-paced top-down library management game where players return books, 
+help students by answering quiz questions, and keep the library under control before time runs out]
 
 This is my own build of my group's game concept. Every commit in this repository was made by me, with Git, on my own computer or in my own Codespace.
 
@@ -60,17 +61,17 @@ Base URL: `http://localhost:3001/api/v1`
 
 ## What "completed" means in my game
 
-[One or two sentences: A player is considered completed when their finished_at column is not null (they finished the game). Players who left early or did not finish have finished_at = null and are marked as not completed.]
+One or two sentences: A player is considered completed when their finished_at column is not null (they finished the game). Players who left early or did not finish have finished_at = null and are marked as not completed.
 
 ## Tables
 
-[- users
+- users
 - question_sets
 - questions
 - choices
 - game_sessions
 - players
-- answers]
+- answers
 
 ## Database scripts
 
