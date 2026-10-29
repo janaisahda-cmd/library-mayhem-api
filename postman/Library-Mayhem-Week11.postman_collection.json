@@ -1,0 +1,109 @@
+{
+  "info": {
+    "name": "Library Mayhem API - Week 11",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001/api/v1" },
+    { "key": "host", "value": "2099-1001" },
+    { "key": "otherHost", "value": "2099-0003" },
+    { "key": "setId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "1 Create question set (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Library Mayhem Basics\",\n  \"description\": \"Basic questions\"\n}"
+        },
+        "url": "{{baseUrl}}/question-sets"
+      }
+    },
+    {
+      "name": "2 Title too short (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Hi\"\n}"
+        },
+        "url": "{{baseUrl}}/question-sets"
+      }
+    },
+    {
+      "name": "3 List as host (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "url": "{{baseUrl}}/question-sets"
+      }
+    },
+    {
+      "name": "4 Get one (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "url": "{{baseUrl}}/question-sets/{{setId}}"
+      }
+    },
+    {
+      "name": "5 Not found (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "url": "{{baseUrl}}/question-sets/999"
+      }
+    },
+    {
+      "name": "6 Other host (403)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Demo-User", "value": "{{otherHost}}" }
+        ],
+        "url": "{{baseUrl}}/question-sets/{{setId}}"
+      }
+    },
+    {
+      "name": "7 Update (200)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated Title\"\n}"
+        },
+        "url": "{{baseUrl}}/question-sets/{{setId}}"
+      }
+    },
+    {
+      "name": "8 Delete (204)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "url": "{{baseUrl}}/question-sets/{{setId}}"
+      }
+    }
+  ]
+}
