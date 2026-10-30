@@ -7,11 +7,12 @@
     { "key": "baseUrl", "value": "http://localhost:3001/api/v1" },
     { "key": "host", "value": "2099-1001" },
     { "key": "otherHost", "value": "2099-0003" },
-    { "key": "setId", "value": "1" }
+    { "key": "setId", "value": "1" },
+    { "key": "code", "value": "" }
   ],
   "item": [
     {
-      "name": "1 Create question set (201)",
+      "name": "Module 1 - Create question set (201)",
       "request": {
         "method": "POST",
         "header": [
@@ -26,7 +27,7 @@
       }
     },
     {
-      "name": "2 Title too short (400)",
+      "name": "Module 1 - Title too short (400)",
       "request": {
         "method": "POST",
         "header": [
@@ -41,7 +42,7 @@
       }
     },
     {
-      "name": "3 List as host (200)",
+      "name": "Module 1 - List (200)",
       "request": {
         "method": "GET",
         "header": [
@@ -51,27 +52,7 @@
       }
     },
     {
-      "name": "4 Get one (200)",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "X-Demo-User", "value": "{{host}}" }
-        ],
-        "url": "{{baseUrl}}/question-sets/{{setId}}"
-      }
-    },
-    {
-      "name": "5 Not found (404)",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "X-Demo-User", "value": "{{host}}" }
-        ],
-        "url": "{{baseUrl}}/question-sets/999"
-      }
-    },
-    {
-      "name": "6 Other host (403)",
+      "name": "Module 1 - Other host (403)",
       "request": {
         "method": "GET",
         "header": [
@@ -81,7 +62,77 @@
       }
     },
     {
-      "name": "7 Update (200)",
+      "name": "Module 1 - Not found (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "url": "{{baseUrl}}/question-sets/999"
+      }
+    },
+    {
+      "name": "Module 2 - Host starts game (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question_set_id\": 1\n}"
+        },
+        "url": "{{baseUrl}}/sessions"
+      }
+    },
+    {
+      "name": "Module 2 - Player joins (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nickname\": \"PlayerOne\"\n}"
+        },
+        "url": "{{baseUrl}}/sessions/{{code}}/players"
+      }
+    },
+    {
+      "name": "Module 2 - Rejoin (200)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{host}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nickname\": \"PlayerOne\"\n}"
+        },
+        "url": "{{baseUrl}}/sessions/{{code}}/players"
+      }
+    },
+    {
+      "name": "Module 2 - Nickname taken (409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{otherHost}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nickname\": \"PlayerOne\"\n}"
+        },
+        "url": "{{baseUrl}}/sessions/{{code}}/players"
+      }
+    },
+    {
+      "name": "Module 2 - Start game (200)",
       "request": {
         "method": "PATCH",
         "header": [
@@ -90,19 +141,24 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"Updated Title\"\n}"
+          "raw": "{\n  \"status\": \"ACTIVE\"\n}"
         },
-        "url": "{{baseUrl}}/question-sets/{{setId}}"
+        "url": "{{baseUrl}}/sessions/{{code}}"
       }
     },
     {
-      "name": "8 Delete (204)",
+      "name": "Module 2 - Join too late (409)",
       "request": {
-        "method": "DELETE",
+        "method": "POST",
         "header": [
-          { "key": "X-Demo-User", "value": "{{host}}" }
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Demo-User", "value": "{{otherHost}}" }
         ],
-        "url": "{{baseUrl}}/question-sets/{{setId}}"
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nickname\": \"LatePlayer\"\n}"
+        },
+        "url": "{{baseUrl}}/sessions/{{code}}/players"
       }
     }
   ]
