@@ -1,12 +1,12 @@
 'use strict';
 
 module.exports = {
-  players_session_id_user_id_key: {
+  uq_one_seat: {
     status: 409,
     code: 'ALREADY_JOINED',
     message: 'You already have a seat in this game.',
   },
-  players_session_id_nickname_key: {
+  uq_player_nickname: {
     status: 409,
     code: 'NICKNAME_TAKEN',
     message: 'That nickname is already used in this game.',
