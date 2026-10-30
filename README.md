@@ -59,6 +59,25 @@ Base URL: `http://localhost:3001/api/v1`
 | GET | /game-info | Slug, name, group, developer, description, player limits, version | 200 |
 | GET | /results | Finished games, every player, and the top 3. Needs the `X-Hub-Key` header. Optional `?since=` | 200 (401 without the key) |
 
+## Week 11 Endpoints
+
+### Question Sets (Module 1)
+| Method | URL | Who | Description |
+|--------|-----|-----|-------------|
+| GET | /api/v1/question-sets | Host, Admin | List own question sets |
+| POST | /api/v1/question-sets | Host, Admin | Create question set |
+| GET | /api/v1/question-sets/:id | Host, Admin | Get one question set |
+| PATCH | /api/v1/question-sets/:id | Host, Admin | Update question set |
+| DELETE | /api/v1/question-sets/:id | Host, Admin | Delete question set |
+
+### Sessions (Module 2)
+| Method | URL | Who | Description |
+|--------|-----|-----|-------------|
+| POST | /api/v1/sessions | Host, Admin | Start a game (returns 6-digit code) |
+| GET | /api/v1/sessions/:code | Anyone | Get session by code |
+| PATCH | /api/v1/sessions/:code | Host, Admin | Change status (ACTIVE / CLOSED) |
+| POST | /api/v1/sessions/:code/players | Any account | Join or rejoin a game |
+
 ## What "completed" means in my game
 
 One or two sentences: A player is considered completed when their finished_at column is not null (they finished the game). Players who left early or did not finish have finished_at = null and are marked as not completed.
