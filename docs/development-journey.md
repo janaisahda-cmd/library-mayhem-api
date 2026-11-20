@@ -1,19 +1,19 @@
-# Development journey: [your game title] API
+# Development journey: Library Mayhem API
 
-Student: [your name] · Section: [3-1 or 3-2] · Group: [group name]
+Student: Janaisah D. Amatonding · Section: 3-2 · Group: TEAM 12
 
 One entry per milestone, written the week you did it. Newest at the bottom.
 
 ## M1 · Accounts, passwords and tokens
-- Dates worked: [e.g. Nov 4 to Nov 7, 2026] · Time spent: [hours]
-- Goal: [one sentence]
-- What I built: [files and endpoints]
+- Dates worked: November 20, 2026 · Time spent: 2 hours
+- Goal: Install the kit and prepare for authentication
+- What I built: Installed Weeks 12–18 kit, added JWT_SECRET, updated .env and .gitignore, created feature/auth branch
 - Evidence: [pull request link] · [two or three commit hashes]
-- Problem I hit: [the error or wrong behaviour]
+- Problem I hit: None yet
 - How I solved it: [what you tried, what worked, where you found the answer]
-- Decision I made and why: [a rule, a limit or a name, and its cost]
-- Changes to my design set: [ERD, data dictionary or endpoint table changes, or "none"]
-- What I would explain to a classmate: [one idea, in your own words]
+- Decision I made and why: Used the official kit so the check workflow stays correct
+- Changes to my design set: none
+- What I would explain to a classmate: We need a JWT secret so login tokens can be signed securely
 
 ## M2 · The question bank
 
