@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const env = require('../config/env');
 
 function hash(password) {
-  return bcrypt.hash(password, env.bcryptRounds);   // rounds = cost factor: 10 means 2^10 rounds
+  return bcrypt.hash(password, 10);   // rounds = cost factor: 10 means 2^10 rounds
 }
 
 // A hash of a random string. Comparing against it when the account does not exist

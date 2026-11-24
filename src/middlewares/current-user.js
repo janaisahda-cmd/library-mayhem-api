@@ -31,7 +31,7 @@ async function currentUser(req, res, next) {
     throw unauthorized(message, 'INVALID_TOKEN');
   }
 
-  const account = await userRepository.findById(Number(payload.sub));
+  const account = await userRepository.findById(Number(payload.user_id));
   if (!account) throw unauthorized('This account no longer exists.', 'INVALID_TOKEN');
 
   req.account = account;                 // the full account, for GET /auth/me

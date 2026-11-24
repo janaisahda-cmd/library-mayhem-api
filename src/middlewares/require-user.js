@@ -1,0 +1,20 @@
+'use strict';
+
+const { AppError } = require('../errors/app-error');
+
+function requireUser(...roles) {
+  const allowed = roles.flat();
+
+  return function (req, res, next) {
+    if (!req.user) {
+      return next(new AppError(401, 'Authentication required', 'UNAUTHORIZED'));
+    }
+    if (allowed.length > 0 && !allowed.includes(req.user.role)) {
+      return next(new AppError(403, 'Forbidden', 'FORBIDDEN'));
+    }
+    next();
+  };
+}
+
+module.exports = requireUser;
+module.exports.requireUser = requireUser;
