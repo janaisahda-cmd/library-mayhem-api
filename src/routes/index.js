@@ -14,6 +14,8 @@ router.use('/results', require('./results.routes'));
 // From here, req.user is set (or null)
 router.use(currentUser);
 
+router.use('/users', require('./user.routes'));
+
 // Protected modules (Week 11)
 router.use('/question-sets', require('./question-set.routes'));
 router.use('/sessions', require('./session.routes'));
