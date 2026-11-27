@@ -14,6 +14,7 @@ One entry per milestone, written the week you did it. Newest at the bottom.
   - GET /auth/me
   - Updated User model (username + password_hash)
   - Demo password: DemoPass123
+  - Added GET /users and PATCH /users/:id/role (ADMIN only)
 - Evidence: PR #5 · commits on feature/auth
 - Problem I hit:
   - username column was required but missing in model
