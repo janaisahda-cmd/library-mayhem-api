@@ -986,6 +986,7 @@
                   "  const list = pm.response.json().data;",
                   "  pm.expect(list).to.be.an(\"array\");",
                   "  pm.expect(list.length).to.be.at.least(6);",
+                  "  pm.expect(pm.response.json().meta.total).to.be.at.least(6);",
                   "  list.forEach((u) => pm.expect(u).to.not.have.property(\"password_hash\"));",
                   "});"
                 ]
@@ -1007,6 +1008,119 @@
               ],
               "path": [
                 "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin lists accounts, page 1 of 2 per page: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Two accounts and the paging details\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.data.length).to.eql(2);",
+                  "  pm.expect(j.meta.page).to.eql(1);",
+                  "  pm.expect(j.meta.limit).to.eql(2);",
+                  "  pm.expect(j.meta.pages).to.be.at.least(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=2&sort=school_id&order=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users?page=1&limit=2&sort=school_id&order=desc"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin filters accounts by role HOST: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Every account is a HOST\", () => {",
+                  "  const list = pm.response.json().data;",
+                  "  pm.expect(list.length).to.be.at.least(1);",
+                  "  list.forEach((u) => pm.expect(u.role).to.eql(\"HOST\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users?role=HOST",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users?role=HOST"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin sorts by a column that is not allowed: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users?sort=password_hash",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users?sort=password_hash"
               ]
             }
           }
@@ -1416,7 +1530,11 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"A list\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                  "pm.test(\"A page with data and meta\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.data).to.be.an(\"array\");",
+                  "  pm.expect(j.meta).to.have.all.keys(\"page\", \"limit\", \"total\", \"pages\");",
+                  "});"
                 ]
               }
             }
@@ -2079,6 +2197,1447 @@
                   "language": "json"
                 }
               }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Question bank (paging, nested questions, upload)",
+      "item": [
+        {
+          "name": "Host creates a set for the question bank: 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"bankSetId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Question Bank Set\",\n  \"description\": \"Made by the collection\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add question 1 with 3 choices: 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Position 1, labels A to C, exactly one correct choice\", () => {",
+                  "  const q = pm.response.json();",
+                  "  pm.expect(q.position).to.eql(1);",
+                  "  pm.expect(q.time_limit_seconds).to.eql(20);",
+                  "  pm.expect(q.choices.map((c) => c.label)).to.eql([\"A\", \"B\", \"C\"]);",
+                  "  pm.expect(q.choices.filter((c) => c.is_correct).length).to.eql(1);",
+                  "});",
+                  "pm.collectionVariables.set(\"q1Id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Which desk lends books?\",\n  \"time_limit_seconds\": 20,\n  \"choices\": [\n    { \"text\": \"Circulation desk\", \"is_correct\": true },\n    { \"text\": \"Reading room\" },\n    { \"text\": \"Archive\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add question 2 with 4 choices: 201, position 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Position 2 and labels A to D\", () => {",
+                  "  const q = pm.response.json();",
+                  "  pm.expect(q.position).to.eql(2);",
+                  "  pm.expect(q.choices.map((c) => c.label)).to.eql([\"A\", \"B\", \"C\", \"D\"]);",
+                  "});",
+                  "pm.collectionVariables.set(\"q2Id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"What does OPAC stand for?\",\n  \"choices\": [\n    { \"text\": \"Open Public Activity Center\" },\n    { \"text\": \"Online Public Access Catalog\", \"is_correct\": true },\n    { \"text\": \"Official Public Art Collection\" },\n    { \"text\": \"Online Private Access Code\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Two correct choices: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code ONE_CORRECT_CHOICE_REQUIRED\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"ONE_CORRECT_CHOICE_REQUIRED\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Two right answers?\",\n  \"choices\": [\n    { \"text\": \"One\", \"is_correct\": true },\n    { \"text\": \"Two\", \"is_correct\": true }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "No correct choice: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code ONE_CORRECT_CHOICE_REQUIRED\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"ONE_CORRECT_CHOICE_REQUIRED\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"No right answer?\",\n  \"choices\": [\n    { \"text\": \"One\" },\n    { \"text\": \"Two\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Only one choice: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Only one choice?\",\n  \"choices\": [\n    { \"text\": \"Alone\", \"is_correct\": true }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Time limit out of range: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Too slow?\",\n  \"time_limit_seconds\": 500,\n  \"choices\": [\n    { \"text\": \"Yes\", \"is_correct\": true },\n    { \"text\": \"No\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "A player adds a question: 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error body has code FORBIDDEN\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"FORBIDDEN\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Can a player add this?\",\n  \"choices\": [\n    { \"text\": \"No\", \"is_correct\": true },\n    { \"text\": \"Yes\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add a question to a set a game already uses: 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error body has code SET_IN_USE\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"SET_IN_USE\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{setId}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{setId}}",
+                "questions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Too late to add this?\",\n  \"choices\": [\n    { \"text\": \"Yes\", \"is_correct\": true },\n    { \"text\": \"No\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Edit a question of a set in use: 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Error body has code SET_IN_USE\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"SET_IN_USE\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{setId}}/questions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{setId}}",
+                "questions",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Changed too late\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List questions, page 2 with 1 per page: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"One question and the paging details\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.data.length).to.eql(1);",
+                  "  pm.expect(j.meta.page).to.eql(2);",
+                  "  pm.expect(j.meta.limit).to.eql(1);",
+                  "  pm.expect(j.meta.total).to.eql(2);",
+                  "  pm.expect(j.meta.pages).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions?page=2&limit=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions?page=2&limit=1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List questions sorted by position, newest first: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Position 2 comes first\", () => pm.expect(pm.response.json().data[0].position).to.eql(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions?sort=position&order=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions?sort=position&order=desc"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search with no match is still 200 and empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"An empty page\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.data).to.eql([]);",
+                  "  pm.expect(j.meta.total).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions?q=zzzznomatch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions?q=zzzznomatch"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sort by a column that is not allowed: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions?sort=correct_choice_id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions?sort=correct_choice_id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Limit that is too big: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions?limit=500",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions?limit=500"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Read the set with include=questions: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"The set holds both questions with their choices, in order\", () => {",
+                  "  const set = pm.response.json();",
+                  "  pm.expect(set.questions.length).to.eql(2);",
+                  "  pm.expect(set.questions.map((q) => q.position)).to.eql([1, 2]);",
+                  "  set.questions.forEach((q) => pm.expect(q.choices.length).to.be.at.least(2));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}?include=questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}?include=questions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Read the set with an include that does not exist: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}?include=secrets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}?include=secrets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List my sets, 1 per page: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"One set and limit 1 in the meta\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.data.length).to.eql(1);",
+                  "  pm.expect(j.meta.limit).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets?limit=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets?limit=1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search my sets by title: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Every title contains the search word\", () => {",
+                  "  const list = pm.response.json().data;",
+                  "  pm.expect(list.length).to.be.at.least(1);",
+                  "  list.forEach((s) => pm.expect(s.title.toLowerCase()).to.include(\"bank\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets?q=bank",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets?q=bank"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sort my sets by a column that is not allowed: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets?sort=host_id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets?sort=host_id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit question 1: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"The text changed\", () => pm.expect(pm.response.json().question_text).to.eql(\"Which desk lends the books?\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions/{{q1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions",
+                "{{q1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Which desk lends the books?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Edit with an empty body: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code VALIDATION_ERROR\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions/{{q1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions",
+                "{{q1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Unknown question: 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error body has code QUESTION_NOT_FOUND\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"QUESTION_NOT_FOUND\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions",
+                "999999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete question 1: 204",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions/{{q1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions",
+                "{{q1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Question 2 moved up to position 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"The positions were renumbered\", () => pm.expect(pm.response.json().position).to.eql(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions/{{q2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions",
+                "{{q2Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete question 1 again: 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error body has code QUESTION_NOT_FOUND\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"QUESTION_NOT_FOUND\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/questions/{{q1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "questions",
+                "{{q1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload a cover picture: 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"The picture address is made by the server\", () => {",
+                  "  pm.expect(pm.response.json().picture).to.match(/^\\/uploads\\/covers\\/set-\\d+-.+\\.png$/);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "cover"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/cover.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload a file that is not a picture: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code INVALID_FILE_TYPE\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"INVALID_FILE_TYPE\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "cover"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/not-a-picture.txt"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload a picture that is too big: 413",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 413\", () => pm.response.to.have.status(413));",
+                  "pm.test(\"Error body has code FILE_TOO_LARGE\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"FILE_TOO_LARGE\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "cover"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/too-big.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload with no file: 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error body has code COVER_REQUIRED\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"COVER_REQUIRED\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "cover"
+              ]
+            }
+          }
+        },
+        {
+          "name": "A player uploads a cover: 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Error body has code FORBIDDEN\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"FORBIDDEN\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{playerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/{{bankSetId}}/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "{{bankSetId}}",
+                "cover"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/cover.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload a cover for a set that does not exist: 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Error body has code QUESTION_SET_NOT_FOUND\", () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.error.code).to.eql(\"QUESTION_SET_NOT_FOUND\");",
+                  "  pm.expect(j.error.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{hostToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/question-sets/999999/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "question-sets",
+                "999999",
+                "cover"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "src": "postman/fixtures/cover.png"
+                }
+              ]
             }
           }
         }
