@@ -2,11 +2,13 @@
 
 const userService = require('../services/user.service');
 const { matchedData } = require('express-validator');
+const { envelope } = require('../utils/paginate');
 
 async function list(req, res, next) {
   try {
-    const users = await userService.list();
-    res.json({ data: users });
+    const query = matchedData(req, { locations: ['query'] });
+    const { rows, count } = await userService.list(query);
+    res.json(envelope(rows, count, query));
   } catch (err) {
     next(err);
   }

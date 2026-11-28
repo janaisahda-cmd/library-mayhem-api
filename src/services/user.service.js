@@ -3,8 +3,8 @@
 const userRepo = require('../repositories/user.repository');
 const { AppError } = require('../errors/app-error');
 
-async function list() {
-  return userRepo.findAll();
+async function list(query) {
+  return userRepo.findPage(query);
 }
 
 async function changeRole(actorId, targetId, newRole) {
