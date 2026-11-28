@@ -5,15 +5,18 @@ const controller = require('../controllers/question-set.controller');
 const rules = require('../validators/question-set.validator');
 const validate = require('../middlewares/validate');
 const requireUser = require('../middlewares/require-user');
+const questionRoutes = require('./question.routes');
 
 const router = Router();
 
 router.use(requireUser('HOST', 'ADMIN'));
 
-router.get('/', controller.list);
+router.get('/', rules.listRules, validate, controller.list);
 router.post('/', rules.createRules, validate, controller.create);
-router.get('/:id', rules.idParam, validate, controller.get);
+router.get('/:id', rules.getRules, validate, controller.get);
 router.patch('/:id', rules.updateRules, validate, controller.update);
 router.delete('/:id', rules.idParam, validate, controller.remove);
+
+router.use('/:id/questions', questionRoutes);
 
 module.exports = router;
