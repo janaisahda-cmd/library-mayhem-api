@@ -1,7 +1,11 @@
 'use strict';
 
+const fs = require('fs/promises');
+const path = require('path');
 const questionSetRepository = require('../repositories/question-set.repository');
 const { notFound, forbidden } = require('../errors/app-error');
+
+const PROJECT_ROOT = path.join(__dirname, '..', '..');
 
 async function findOrFail(id, options) {
   const questionSet = await questionSetRepository.findById(id, options);
@@ -18,6 +22,16 @@ function isOwner(questionSet, user) {
 function assertOwner(questionSet, user) {
   if (!isOwner(questionSet, user)) {
     throw forbidden('This question set belongs to another host.');
+  }
+}
+
+// Deletes an uploaded picture. A file that is already gone is not an error.
+async function removeFile(publicPath) {
+  if (!publicPath) return;
+  try {
+    await fs.unlink(path.join(PROJECT_ROOT, publicPath));
+  } catch (error) {
+    // nothing to delete
   }
 }
 
@@ -52,10 +66,28 @@ async function remove(id, user) {
   await questionSetRepository.remove(questionSet);
 }
 
+// The upload middleware already saved the file. If we refuse the request,
+// we delete that file again, so refused uploads leave nothing behind.
+async function setCover(id, file, user) {
+  const publicPath = `/uploads/covers/${file.filename}`;
+  try {
+    const questionSet = await findOrFail(id);
+    assertOwner(questionSet, user);
+    const oldPicture = questionSet.picture;
+    const updated = await questionSetRepository.update(questionSet, { picture: publicPath });
+    await removeFile(oldPicture);
+    return updated;
+  } catch (error) {
+    await removeFile(publicPath);
+    throw error;
+  }
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
   remove,
+  setCover,
 };

@@ -51,10 +51,17 @@ async function remove(req, res) {
   res.status(204).end();
 }
 
+async function uploadCover(req, res) {
+  const { id } = matchedData(req, { locations: ['params'] });
+  const questionSet = await questionSetService.setCover(id, req.file, req.user);
+  res.status(200).json(toJson(questionSet));
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
   remove,
+  uploadCover,
 };
