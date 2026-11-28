@@ -6,11 +6,9 @@ const bcrypt = require('bcryptjs');
 module.exports = {
   async up(queryInterface) {
     const hash = await bcrypt.hash('DemoPass123', 10);
-
-    await queryInterface.bulkUpdate(
-      'users',
-      { password_hash: hash },
-      { password_hash: null }
+    await queryInterface.sequelize.query(
+      "UPDATE users SET password_hash = :hash WHERE password_hash IS NULL OR password_hash LIKE 'hashed_password_%'",
+      { replacements: { hash } }
     );
   },
 

@@ -17,17 +17,17 @@ async function register({ school_id, full_name, email, password: plain }) {
 
   try {
     const user = await userRepo.create({
-  school_id,
-  username: school_id,
-  full_name,
-  email,
-  password_hash,
-  role: 'PLAYER',
-});
+      school_id,
+      username: school_id,
+      full_name,
+      email,
+      password_hash,
+      role: 'PLAYER',
+    });
     return toJson(user);
   } catch (err) {
     if (err.name === 'SequelizeUniqueConstraintError') {
-      throw new AppError(409, 'School ID or email already taken', 'ALREADY_EXISTS');
+      throw new AppError(409, 'ALREADY_EXISTS', 'School ID or email already taken');
     }
     throw err;
   }
@@ -38,7 +38,7 @@ async function login({ school_id, password: plain }) {
 
   const ok = await password.matches(plain, user ? user.password_hash : null);
   if (!ok) {
-    throw new AppError(401, 'Invalid school ID or password', 'INVALID_CREDENTIALS');
+    throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid school ID or password');
   }
 
   const signed = token.sign({
@@ -58,7 +58,7 @@ async function login({ school_id, password: plain }) {
 async function me(userId) {
   const user = await userRepo.findById(userId);
   if (!user) {
-    throw new AppError(401, 'Not authenticated', 'UNAUTHORIZED');
+    throw new AppError(401, 'AUTH_REQUIRED', 'Not authenticated');
   }
   return toJson(user);
 }

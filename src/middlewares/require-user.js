@@ -7,10 +7,10 @@ function requireUser(...roles) {
 
   return function (req, res, next) {
     if (!req.user) {
-      return next(new AppError(401, 'Authentication required', 'UNAUTHORIZED'));
+      return next(new AppError(401, 'AUTH_REQUIRED', 'Authentication required'));
     }
     if (allowed.length > 0 && !allowed.includes(req.user.role)) {
-      return next(new AppError(403, 'Forbidden', 'FORBIDDEN'));
+      return next(new AppError(403, 'FORBIDDEN', 'Forbidden'));
     }
     next();
   };
