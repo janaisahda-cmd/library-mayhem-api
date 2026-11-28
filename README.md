@@ -83,3 +83,9 @@ One or two sentences: A player is considered completed when their finished_at co
 | npm run db:check | Counts the rows in every table |
 | npm run db:reset | Empties the database, rebuilds every table and reloads the seed data |
 | npm run check | Runs the same automatic check that GitHub runs after every push |
+
+### Demo password
+
+After running the seeders, existing users can log in with: DemoPass123
+
+You can also create a new account with `POST /api/v1/auth/register`.
