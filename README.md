@@ -89,3 +89,16 @@ One or two sentences: A player is considered completed when their finished_at co
 After running the seeders, existing users can log in with: DemoPass123
 
 You can also create a new account with `POST /api/v1/auth/register`.
+
+### Demo accounts
+All demo accounts use the password DemoPass123.
+
+| School ID | Role |
+|---|---|
+| 2099-1000 | ADMIN |
+| 2099-1001 | HOST |
+| 2099-1002 | PLAYER |
+| 2099-1003 | PLAYER |
+| 2099-1004 | PLAYER |
+| 2099-1005 | PLAYER |
+| 2099-1099 | PLAYER |
